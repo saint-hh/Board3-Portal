@@ -134,7 +134,7 @@ class fetch_posts
 	public function get_posts($forum_from, $permissions, $number_of_posts, $text_length, $time, $type, $start = 0, $invert = false)
 	{
 		$posts = array();
-		$post_time = $this->get_setting_based_data($time == 0, '', 'AND t.topic_time > ' . (time() - $time * 86400));
+		$post_time = $this->get_setting_based_data($time == 0, '', 'AND t.topic_time > ' . (time() - (int) $time * 86400));
 		$forum_from = $this->get_setting_based_data(strpos($forum_from, ',') !== false, explode(',', $forum_from), $this->get_setting_based_data($forum_from != '', array($forum_from), array()));
 		$topic_icons = array(0);
 		$have_icons = 0;
@@ -205,7 +205,7 @@ class fetch_posts
 				t.topic_title,
 				t.topic_attachment,
 				t.topic_views,
-				t.poll_title,
+				t.poll_start,
 				t.topic_posts_approved,
 				t.topic_posts_unapproved,
 				t.topic_posts_softdeleted,
@@ -298,7 +298,9 @@ class fetch_posts
 		// Format message
 		$message = $this->format_message($row, $text_length, $posts[$i]['striped']);
 
-		$row['bbcode_options'] = $this->get_setting_based_data($row['enable_bbcode'], OPTION_FLAG_BBCODE, 0) + $this->get_setting_based_data($row['enable_smilies'], OPTION_FLAG_SMILIES, 0) + $this->get_setting_based_data($row['enable_magic_url'], OPTION_FLAG_LINKS, 0);
+		$row['bbcode_options'] = (int) $this->get_setting_based_data($row['enable_bbcode'], OPTION_FLAG_BBCODE, 0)
+			+  (int) $this->get_setting_based_data($row['enable_smilies'], OPTION_FLAG_SMILIES, 0)
+			+ (int) $this->get_setting_based_data($row['enable_magic_url'], OPTION_FLAG_LINKS, 0);
 		$message = generate_text_for_display($message, $row['bbcode_uid'], $row['bbcode_bitfield'], $row['bbcode_options']);
 
 		if (!empty($attachments))
@@ -332,7 +334,7 @@ class fetch_posts
 			'user_id'				=> $row['user_id'],
 			'user_type'				=> $row['user_type'],
 			'user_colour'			=> $row['user_colour'],
-			'poll'					=> $this->get_setting_based_data($row['poll_title'], true, false),
+			'poll'					=> $this->get_setting_based_data($row['poll_start'], true, false),
 			'attachment'			=> $this->get_setting_based_data($row['topic_attachment'], true, false),
 			'topic_views'			=> $row['topic_views'],
 			'forum_name'			=> $row['forum_name'],
